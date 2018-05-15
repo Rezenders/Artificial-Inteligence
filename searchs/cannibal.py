@@ -3,6 +3,7 @@
 from queue import Queue
 
 def main():
+    print("BUSCA EM LARGURA")
     initial = cannibal_state([3,3,0,0,1])
     goal = cannibal_state([0,0,3,3,-1])
 
