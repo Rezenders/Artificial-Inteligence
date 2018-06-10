@@ -12,4 +12,5 @@ config_w(1,3).
 config_g(2,3).
 
 %World rules
-config_breeze(X,Y) :- findall()
+config_breeze(X,Y) :- config_pit(X1,X2),adj(X1,X2,X,Y).
+config_stench(X,Y) :- config_w(X1,X2),adj(X1,X2,X,Y).
