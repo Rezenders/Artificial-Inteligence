@@ -17,32 +17,56 @@ init(1,1).
 %World rules
 config_breeze(X,Y) :- config_pit(X1,X2),adj(X1,X2,X,Y).
 config_stench(X,Y) :- config_w(X1,X2),adj(X1,X2,X,Y).
+%config_breeze(2,1).
+%config_breeze(4,1).
+%config_breeze(3,2).
+%
+%config_breeze(2,3).
+%config_breeze(4,3).
+%config_breeze(3,2).
+%config_breeze(3,4).
+%
+%config_breeze(3,4).
+%config_breeze(4,3).
+%
+%config_stench(2,3).
+%config_stench(1,2).
+%config_stench(1,4).
 
 %perceptions
-breeze(X,Y) :- at(X,Y), config_breeze(X,Y).
-stench(X,Y) :- at(X,Y), config_stench(X,Y).
-not_breeze(X,Y) :- at(X,Y), \+ config_breeze(X,Y).
-not_stench(X,Y) :- at(X,Y), \+ config_stench(X,Y).
-
-%breeze([]).
-%breeze([[H1,H2]|T]) :- breeze(H1,H2), breeze(T).
-%not_breeze([]).
-%not_breeze([[H1,H2]|T]) :- not_breeze(H1,H2), not_breeze(T).
-%stench([]).
-%stench([[H1,H2]|T]) :- stench(H1,H2), stench(T).
-%not_stench([]).
-%not_stench([[H1,H2]|T]) :- not_stench(H1,H2), not_stench(T).
+not_breeze(X,Y) :- \+ config_breeze(X,Y).
+not_stench(X,Y) :- \+ config_stench(X,Y).
 
 %Deductions
-%pit(X,Y) :- findall([X2,Y2], adj(X,Y,X2,Y2),P), breeze(P).
-%not_pit(X,Y) :- findall([X2,Y2], adj(X,Y,X2,Y2), P), not_breeze(P).
-not_pit(X,Y) :- at(X2,Y2), not_breeze(X2,Y2), adj(X2,Y2,X,Y).
+not_pit(Xi,Yi,Xf,Yf) :- not_breeze(Xi,Yi),!, adj(Xi,Yi,Xf,Yf).
 
-%wumpus(X,Y) :- findall([X2,Y2], adj(X,Y,X2,Y2),P), stench(P).
-%not_wumpus(X,Y) :- findall([X2,Y2], adj(X,Y,X2,Y2), P), not_stench(P).
-not_wumpus(X,Y) :- at(X2,Y2), not_stench(X2,Y2), adj(X2,Y2,X,Y).
+not_wumpus(Xi,Yi,Xf,Yf) :- not_stench(Xi,Yi),!, adj(Xi,Yi,Xf,Yf).
 
-ok(X,Y) :- not_wumpus(X,Y),!, not_pit(X,Y),!, write(X),write(Y).
+ok(Xi,Yi,Xf,Yf,NW,NP) :- adj(Xi,Yi,Xf,Yf), member([Xf,Yf],NW) , member([Xf,Yf],NP).
 
-at(X,Y) :- init(X,Y).
-at(X,Y) :- at(X2,Y2), adj(X2,Y2,X,Y), ok(X,Y).
+move:- 
+	findall([X,Y], not_wumpus(1,1,X,Y),NW),
+	findall([X,Y], not_pit(1,1,X,Y),NP),
+	findall([X,Y], ok(1,1,X,Y,NW,NP), OKS),
+	move(OKS,NW,NP).
+
+move([[Xi,Yi]|T],NW,NP):-
+	findall([X,Y], not_wumpus(Xi,Yi,X,Y),NW2),
+	append(NW,NW2,NW3),unique_list(NW3,UNW),
+	findall([X,Y], not_pit(Xi,Yi,X,Y),NP2),
+	append(NP,NP2,NP3),unique_list(NP3,UNP),
+	findall([X,Y], ok(Xi,Yi,X,Y,UNW,UNP), OKS),
+	append(T,OKS,OKS2),unique_list(OKS2,UOK),
+	config_g(X,Y),\+member([X,Y],UOK)->move(UOK,UNW,UNP);true.
+
+
+unique_list([],[]).
+unique_list([H|T],L) :-
+        unique_list(T,L2), ensure(H,L2,L).
+
+% If X is already a member of L, then the result is L
+ensure(X, L, L) :-
+    member(X, L), !.
+
+% If not, the result is X appended to L
+ensure(X, L, [X | L]).
