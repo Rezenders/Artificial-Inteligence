@@ -17,21 +17,6 @@ init(1,1).
 %World rules
 config_breeze(X,Y) :- config_pit(X1,X2),adj(X1,X2,X,Y).
 config_stench(X,Y) :- config_w(X1,X2),adj(X1,X2,X,Y).
-%config_breeze(2,1).
-%config_breeze(4,1).
-%config_breeze(3,2).
-%
-%config_breeze(2,3).
-%config_breeze(4,3).
-%config_breeze(3,2).
-%config_breeze(3,4).
-%
-%config_breeze(3,4).
-%config_breeze(4,3).
-%
-%config_stench(2,3).
-%config_stench(1,2).
-%config_stench(1,4).
 
 %perceptions
 not_breeze(X,Y) :- \+ config_breeze(X,Y).
@@ -44,7 +29,8 @@ not_wumpus(Xi,Yi,Xf,Yf) :- not_stench(Xi,Yi),!, adj(Xi,Yi,Xf,Yf).
 
 ok(Xi,Yi,Xf,Yf,NW,NP) :- adj(Xi,Yi,Xf,Yf), member([Xf,Yf],NW) , member([Xf,Yf],NP).
 
-move:- 
+%check if it possible to find the gold
+find_gold:- 
 	findall([X,Y], not_wumpus(1,1,X,Y),NW),
 	findall([X,Y], not_pit(1,1,X,Y),NP),
 	findall([X,Y], ok(1,1,X,Y,NW,NP), OKS),
@@ -70,3 +56,6 @@ ensure(X, L, L) :-
 
 % If not, the result is X appended to L
 ensure(X, L, [X | L]).
+
+
+
